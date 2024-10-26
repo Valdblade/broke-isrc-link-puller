@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Export DSP Links</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html">Single ISRC Fetch</a>
+    <a href="bulk-export.html">Bulk Export</a>
+  </nav>
+
+  <div class="container">
+    <h1>Bulk Export DSP Links by ISRC</h1>
+    <form id="bulk-isrc-form">
+      <label for="bulk-isrc">Enter ISRCs (comma-separated or new lines):</label>
+      <textarea id="bulk-isrc" name="bulk-isrc" rows="5" placeholder="e.g., USUM72019793, CA5KR2491719" required></textarea>
+      <button type="submit">Fetch and Export Links</button>
+    </form>
+    <div id="bulk-feedback" class="hidden"></div>
+    
+    <div id="bulk-links-section" class="hidden">
+      <h2>Exported Links</h2>
+      <button id="download-csv-button">Download as CSV</button>
+      <pre id="bulk-output"></pre>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+      <p>Made by Valdy</p>
+    </footer>
+  </div>
+
+  <script src="bulk-script.js"></script>
+</body>
+</html>

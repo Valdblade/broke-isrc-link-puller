@@ -1,0 +1,176 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #e0e0e0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column; /* Changed to column to stack navbar and content vertically */
+  align-items: center;
+  min-height: 100vh;
+  overflow-y: auto; /* Ensure body can always scroll vertically */
+}
+
+/* Navbar Styles */
+.navbar {
+  width: 100%;
+  background-color: #1e1e1e;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar a {
+  color: #4ca3dd;
+  text-decoration: none;
+  font-size: 1em;
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.navbar a:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.container {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+  margin: 20px 0; /* Adjust margin for space between navbar and content */
+}
+
+/* Other styles remain the same */
+h1, h2, h3 {
+  color: #ffffff;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input, textarea {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #2c2c2c;
+  color: #e0e0e0;
+  width: 100%;
+}
+
+button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#bulk-feedback {
+  margin-top: 15px;
+  color: #ff6b6b;
+}
+
+pre {
+  background-color: #1e1e1e;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+/* Flex container for track details and history section */
+.flex-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Ensuring both boxes take up appropriate space */
+#track-details, #history-section {
+  flex: 1;
+  min-width: 250px;
+  max-width: 100%;
+  margin-top: 20px;
+}
+
+#track-image {
+  max-width: 100%;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  display: block;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+a {
+  color: #4ca3dd;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#search-history {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+#search-history li {
+  margin: 5px 0;
+  cursor: pointer;
+  color: #4ca3dd;
+}
+
+#search-history li:hover {
+  text-decoration: underline;
+}
+
+#download-button, #download-csv-button {
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 15px;
+}
+
+#download-button:hover, #download-csv-button:hover {
+  background-color: #388e3c;
+}
+
+/* Footer Styles */
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #777;
+}
+
+.footer p {
+  margin: 0;
+}

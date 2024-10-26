@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fetch DSP Links</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="index.html">Single ISRC Fetch</a>
+    <a href="bulk-export.html">Bulk Export</a>
+  </nav>
+
+  <div class="container">
+    <h1>Fetch DSP Links by ISRC</h1>
+    <form id="isrc-form">
+      <label for="isrc">Enter ISRC:</label>
+      <input type="text" id="isrc" name="isrc" placeholder="e.g., USUM72019793" required>
+      <button type="submit">Fetch Links</button>
+    </form>
+    <div id="feedback" class="hidden"></div>
+    
+    <div class="flex-container">
+      <div id="track-details" class="hidden">
+        <h2>Track Details</h2>
+        <img id="track-image" src="" alt="Track Image" />
+        <p><strong>Name:</strong> <span id="track-name"></span></p>
+        <p><strong>Artist:</strong> <span id="track-artist"></span></p>
+        <audio id="audio-player" controls class="hidden">
+          <source id="audio-source" src="" type="audio/mpeg">
+          Your browser does not support the audio element.
+        </audio>
+        <h3>Links</h3>
+        <ul id="link-list"></ul>
+        <button id="download-button" class="hidden">Download Links</button>
+      </div>
+
+      <div id="history-section">
+        <h2>Previous Searches</h2>
+        <ul id="search-history"></ul>
+      </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+      <p>Made by Valdy</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

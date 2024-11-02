@@ -18,56 +18,107 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Serve static files (HTML, CSS, JS)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Store the path of the generated .txt file
-let filePath = '';
+let filePath = path.join(__dirname, 'public', 'dsp-links.txt');
 
-// API route to fetch DSP links and generate a .txt file
-app.post('/fetch-links', async (req, res) => {
-  const isrc = req.body.isrc;
-  const token = process.env.MUSICFETCH_TOKEN;
-  const url = `https://api.musicfetch.io/isrc?isrc=${isrc}&services=amazon,amazonMusic,anghami,appleMusic,audiomack,audius,awa,bandcamp,boomplay,deezer,flo,gaana,iHeartRadio,instagram,jioSaavn,joox,kkbox,lineMusic,napster,netease,pandora,qobuz,qqMusic,sevenDigital,shazam,soundcloud,spotify,tidal,tiktok,tiktokMusic,trebel,wynkMusic,yandex,youtube,youtubeMusic`;
+// List of DSPs
+const dspList = [
+  "amazon", "amazonMusic", "anghami", "appleMusic", "audiomack", "audius", "awa",
+  "bandcamp", "boomplay", "deezer", "flo", "gaana", "iHeartRadio", "instagram",
+  "jioSaavn", "joox", "kkbox", "lineMusic", "napster", "netease", "pandora",
+  "qobuz", "qqMusic", "sevenDigital", "shazam", "soundcloud", "spotify", "tidal",
+  "tiktok", "tiktokMusic", "trebel", "wynkMusic", "yandex", "youtube", "youtubeMusic"
+];
+const services = dspList.join(',');
 
+// Helper function to fetch data from the MusicFetch API
+async function fetchData(url, token) {
   const options = {
     method: 'GET',
     headers: {
       'x-token': token
     }
   };
+  const response = await fetch(url, options);
+  return response.json();
+}
+
+// API route to fetch DSP links and generate a .txt file for ISRC or Spotify URL
+app.post('/fetch-links', async (req, res) => {
+  const { isrc, spotifyUrl } = req.body;
+  const token = process.env.MUSICFETCH_TOKEN;
+  let url;
+  let isrcData = {};
+  let upcData = {};
 
   try {
-    const response = await fetch(url, options);
-    const data = await response.json();
+    if (isrc) {
+      // ISRC API endpoint
+      url = `https://api.musicfetch.io/isrc?isrc=${isrc}&services=${services}`;
+      isrcData = await fetchData(url, token);
+    } else if (spotifyUrl) {
+      if (spotifyUrl.includes("/track/")) {
+        // If it's a track link, fetch ISRC
+        url = `https://api.musicfetch.io/url?url=${encodeURIComponent(spotifyUrl)}&services=${services}`;
+        isrcData = await fetchData(url, token);
 
-    if (data.result && data.result.services) {
-      // Prepare file content and JSON response
-      let output = `ISRC: ${isrc}\n\nDSP Links:\n`;
-      const links = {};
-      for (const [service, serviceDetails] of Object.entries(data.result.services)) {
-        if (serviceDetails.link) {
-          output += `${service}: ${serviceDetails.link}\n`;
-          links[service] = serviceDetails.link;
+        // If album information is available, fetch album data for UPC
+        const albumUrl = isrcData.result?.album?.url;
+        if (albumUrl) {
+          const albumApiUrl = `https://api.musicfetch.io/url?url=${encodeURIComponent(albumUrl)}&services=${services}`;
+          upcData = await fetchData(albumApiUrl, token);
+        }
+      } else if (spotifyUrl.includes("/album/")) {
+        // If it's an album link, fetch UPC
+        url = `https://api.musicfetch.io/url?url=${encodeURIComponent(spotifyUrl)}&services=${services}`;
+        upcData = await fetchData(url, token);
+
+        // If a highlighted track is specified, fetch ISRC for that track
+        const trackHighlight = spotifyUrl.match(/highlight=spotify:track:(\w+)/);
+        if (trackHighlight) {
+          const trackUrl = `https://open.spotify.com/track/${trackHighlight[1]}`;
+          const trackApiUrl = `https://api.musicfetch.io/url?url=${encodeURIComponent(trackUrl)}&services=${services}`;
+          isrcData = await fetchData(trackApiUrl, token);
         }
       }
-
-      filePath = path.join(__dirname, 'public', 'dsp-links.txt');
-      fs.writeFileSync(filePath, output, 'utf8');
-
-      // Send JSON response with additional details and links
-      res.json({
-        trackName: data.result.name,
-        artist: data.result.artists ? data.result.artists[0].name : 'Unknown Artist',
-        image: data.result.image ? data.result.image.url : '',
-        links,
-        previewUrl: data.result.previewUrl || '',
-        fullTrackUrl: data.result.fullTrackUrl || '', // Ensure full track URL is provided if available
-        duration: data.result.duration || 0, // Track duration in milliseconds if available
-        message: 'Links fetched successfully'
-      });
-    } else {
-      res.status(404).json({ message: 'No links found for this ISRC.' });
     }
+
+    // Consolidate results
+    const trackInfo = isrcData.result || upcData.result || {};
+    const links = trackInfo.services || {};
+    const trackName = trackInfo.name || 'Unknown Track';
+    const artist = trackInfo.artists ? trackInfo.artists[0].name : 'Unknown Artist';
+    const image = trackInfo.image ? trackInfo.image.url : '';
+    const previewUrl = trackInfo.previewUrl || '';
+    const fullTrackUrl = trackInfo.fullTrackUrl || '';
+    const duration = trackInfo.duration || 0;
+    const upc = upcData.result?.upc || 'N/A';
+    const isrcCode = isrcData.result?.isrc || isrc || 'N/A';
+
+    // Prepare .txt output
+    let output = `${isrc ? `ISRC: ${isrc}` : `Spotify URL: ${spotifyUrl}`}\n\nDSP Links:\n`;
+    for (const [service, serviceDetails] of Object.entries(links)) {
+      if (serviceDetails.link) {
+        output += `${service}: ${serviceDetails.link}\n`;
+      }
+    }
+    fs.writeFileSync(filePath, output, 'utf8');
+
+    // Send JSON response with all details
+    res.json({
+      trackName,
+      artist,
+      image,
+      links,
+      previewUrl,
+      fullTrackUrl,
+      duration,
+      upc,
+      isrc: isrcCode,
+      message: 'Links fetched successfully'
+    });
   } catch (error) {
     console.error("Error fetching DSP links:", error.message);
     res.status(500).json({ message: "Failed to fetch DSP links." });

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Musicfetch | ISRC Fetcher</title>
+    <!-- Materialize CSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      rel="stylesheet"
+    />
+    <!-- Material Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f1f1f1;
+        margin: 0;
+        font-family: "Roboto", sans-serif;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .container {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        width: calc(100% - 40px);
+        margin: 20px auto;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 40px);
+      }
+
+      .controls {
+        display: flex;
+        justify-content: flex-start;
+        /* Align elements to the start */
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .input-field.custom-input-field,
+      .file-field.custom-file-field,
+      .btn-custom {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        max-width: 200px;
+        /* Control the width */
+        margin-right: 8px;
+        /* Add spacing between elements */
+      }
+
+      .input-field.custom-input-field input,
+      .file-field.custom-file-field .file-path-wrapper input,
+      .btn-custom {
+        height: 40px;
+        /* Control the height */
+        line-height: 40px;
+        width: 100%;
+        /* Make sure input takes the full width */
+      }
+
+      .btn-custom {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 45px;
+        /* Control the height */
+        line-height: 45px;
+        width: auto;
+        /* Make sure button takes the full width */
+      }
+
+      .progress-wrapper {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+      }
+
+      .progress {
+        height: 10px;
+        background-color: #ffffff;
+        border-radius: 4px;
+      }
+
+      .progress .determinate {
+        border-radius: 4px;
+        transition: width 0.4s ease;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        flex: 1;
+        margin-top: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      table th,
+      table td {
+        padding: 12px;
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      table thead th {
+        background-color: #0d47a1;
+        color: #fff;
+        font-size: 14px;
+        border-left: 1px solid #0d47a1;
+        position: sticky;
+      }
+
+      table thead th:first-child {
+        border-left: none;
+      }
+
+      table tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      table tbody tr:nth-child(odd) {
+        background-color: #ffffff;
+      }
+
+      .btn {
+        background-color: #0d47a1;
+      }
+
+      .btn:hover {
+        background-color: #0c4187;
+      }
+
+      .material-icons {
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+
+      .rhs-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-top: 5px;
+      }
+
+      .rhs-buttons .btn {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="controls">
+        <div class="input-field custom-input-field">
+          <input type="text" id="isrcInput" class="validate" />
+          <label for="isrcInput">Enter ISRC</label>
+        </div>
+        <button
+          class="btn waves-effect waves-light btn-custom"
+          onclick="handleISRCInput()"
+        >
+          <i class="material-icons">search</i>Fetch ISRC
+        </button>
+        <div class="file-field input-field custom-file-field">
+          <div
+            class="btn btn-custom"
+            onclick="document.getElementById('csvFileInput').click()"
+          >
+            <span><i class="material-icons">upload</i>Fetch from CSV</span>
+            <input
+              type="file"
+              id="csvFileInput"
+              accept=".csv"
+              style="display: none"
+              onchange="handleFileUpload(event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-wrapper">
+        <div class="progress" id="progressWrapper">
+          <div class="determinate" id="progressBar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="table-wrapper" id="tableWrapper">
+        <table class="highlight responsive-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>ISRC</th>
+              <th>Track Name</th>
+              <th>Release Date</th>
+              <th>Artist Name</th>
+              <th>Album Name</th>
+              <th>Record Label</th>
+              <th>Amazon</th>
+              <th>Amazon Music</th>
+              <th>Anghami</th>
+              <th>Apple Music</th>
+              <th>Audiomack</th>
+              <th>Awa</th>
+              <th>Boomplay</th>
+              <th>Deezer</th>
+              <th>Flo</th>
+              <th>Gaana</th>
+              <th>iHeartRadio</th>
+              <th>JioSaavn</th>
+              <th>Kkbox</th>
+              <th>Line Music</th>
+              <th>Napster</th>
+              <th>Pandora</th>
+              <th>Qobuz</th>
+              <th>QQ Music</th>
+              <th>7digital</th>
+              <th>SoundCloud</th>
+              <th>Spotify</th>
+              <th>Tidal</th>
+              <th>TikTok Music</th>
+              <th>Trebel</th>
+              <th>Wynk Music</th>
+              <th>YouTube</th>
+              <th>YouTube Music</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="fixed-action-btn">
+      <button
+        class="btn-floating btn-large red d-none"
+        id="exportButton"
+        onclick="exportToCSV()"
+      >
+        <i class="large material-icons">file_download</i>
+      </button>
+    </div>
+
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        M.AutoInit();
+      });
+
+      function handleISRCInput() {
+        const isrcInput = document.getElementById("isrcInput").value.trim();
+        if (isrcInput) {
+          document.getElementById("progressWrapper").style.display = "block";
+          fetchAllTrackDetails([isrcInput]);
+        } else {
+          M.toast({
+            html: '<i class="material-icons left">error</i>Please enter an ISRC to fetch.',
+            classes: "red darken-4",
+          });
+        }
+      }
+
+      async function handleFileUpload() {
+        const input = document.getElementById("csvFileInput");
+        const file = input.files[0];
+
+        if (!file) {
+          M.toast({ html: "Please select a CSV file to upload." });
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function (event) {
+          const csvData = event.target.result;
+          const isrcs = parseCSV(csvData);
+          document.getElementById("progressWrapper").style.display = "block";
+          const allData = await fetchAllTrackDetails(isrcs);
+          updateTable(allData);
+          document.getElementById("progressWrapper").style.display = "none";
+          document.getElementById("exportButton").classList.remove("d-none");
+        };
+
+        reader.readAsText(file);
+      }
+
+      function parseCSV(data) {
+        const lines = data.split("\n");
+        const isrcs = lines.map((line) => line.trim()).filter((line) => line);
+        return isrcs;
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function fetchAllTrackDetails(isrcs) {
+        const allData = [];
+        for (let i = 0; i < isrcs.length; i++) {
+          const data = await fetchTrackDetails(isrcs[i]);
+          if (data) {
+            allData.push(data);
+            appendToTable(data);
+          }
+          updateProgress(((i + 1) / isrcs.length) * 100);
+          await wait(1600);
+        }
+        return allData;
+      }
+
+      async function fetchTrackDetails(isrc) {
+        const services = [
+          "amazon",
+          "anghami",
+          "appleMusic",
+          "audiomack",
+          "awa",
+          "boomplay",
+          "deezer",
+          "flo",
+          "gaana",
+          "iHeartRadio",
+          "jioSaavn",
+          "kkbox",
+          "lineMusic",
+          "napster",
+          "pandora",
+          "qobuz",
+          "qqMusic",
+          "sevenDigital",
+          "soundcloud",
+          "spotify",
+          "tidal",
+          "tiktokMusic",
+          "trebel",
+          "wynkMusic",
+          "youtube",
+        ];
+
+        const servicesParam = services.join(",");
+        const apiUrl = `https://api.musicfetch.io/isrc?isrc=${isrc}&services=${servicesParam}`;
+
+        try {
+          const response = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+              "x-token":
+                "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOiJhY2NvdW50XzV6UU9wYlFwSE9tY2NhSU1ZUVFpeWEiLCJpYXQiOjE3MzA0MTg1MzF9.6Z1-T4ZubXWR_5uQ6K3hANDJTGlZLThhC4asdn2orys",
+            },
+          });
+          const responseData = await response.json();
+
+          if (responseData.error) {
+            M.toast({
+              html: `<i class="material-icons left">error</i>${responseData.error.message}`,
+              classes: "red darken-4",
+            });
+            return isrc;
+          }
+
+          return responseData.result;
+        } catch (error) {
+          console.error("Error fetching track details:", error);
+          M.toast({
+            html: '<i class="material-icons left">error</i>Error fetching track details. Please try again.',
+            classes: "red darken-4",
+          });
+          return isrc;
+        }
+      }
+
+      function updateProgress(percentage) {
+        const progressBar = document.getElementById("progressBar");
+        progressBar.style.width = `${percentage}%`;
+        //progressBar.textContent = `${Math.floor(percentage)}%`;
+      }
+
+      function appendToTable(item) {
+        const tableBody = document
+          .getElementById("dataTable")
+          .querySelector("tbody");
+
+        const isrc = item.isrc || item;
+        const releaseDate = item.releaseDate?.slice(0, 10) || "";
+
+        const artistNames = item.artists
+          ? item.artists.map((artist) => artist.name).join(", ")
+          : "";
+        const albumName =
+          item.albums && item.albums[0] ? item.albums[0].name : "";
+
+        const getLink = (platform) => {
+          return item.services?.[platform]?.link || "";
+        };
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+
+        <td>${isrc}</td>
+        <td>${item?.name}</td>
+        <td>${releaseDate}</td>
+        <td>${artistNames || ""}</td>
+        <td>${albumName || ""}</td>
+        <td>${item?.label || ""}</td>
+        <td>${getLink("amazon")}</td>
+        <td>${getLink("amazonMusic")}</td>
+        <td>${getLink("anghami")}</td>
+        <td>${getLink("appleMusic")}</td>
+        <td>${getLink("audiomack")}</td>
+        <td>${getLink("awa")}</td>
+        <td>${getLink("boomplay")}</td>
+        <td>${getLink("deezer")}</td>
+        <td>${getLink("flo")}</td>
+        <td>${getLink("gaana")}</td>
+        <td>${getLink("iHeartRadio")}</td>
+        <td>${getLink("jioSaavn")}</td>
+        <td>${getLink("kkbox")}</td>  
+        <td>${getLink("lineMusic")}</td>
+        <td>${getLink("napster")}</td>
+        <td>${getLink("pandora")}</td>
+        <td>${getLink("qobuz")}</td>
+        <td>${getLink("qqMusic")}</td>
+        <td>${getLink("sevenDigital")}</td>
+        <td>${getLink("soundcloud")}</td>
+        <td>${getLink("spotify")}</td>
+        <td>${getLink("tidal")}</td>
+        <td>${getLink("tiktokMusic")}</td>
+        <td>${getLink("trebel")}</td>
+        <td>${getLink("wynkMusic")}</td>
+        <td>${getLink("youtube")}</td>
+        <td>${getLink("youtubeMusic")}</td>`;
+
+        tableBody.appendChild(row);
+      }
+
+      function updateTable(data) {
+        const tableBody = document
+          .getElementById("dataTable")
+          .querySelector("tbody");
+        tableBody.innerHTML = ""; // Clear existing rows
+        data.forEach((item) => appendToTable(item));
+      }
+
+      function exportToCSV() {
+        const table = document.getElementById("dataTable");
+        const headers = Array.from(table.querySelectorAll("thead th")).map(
+          (th) => th.textContent
+        );
+
+        const tableBody = table.querySelector("tbody");
+        const rows = Array.from(tableBody.querySelectorAll("tr"));
+
+        const data = rows.map((row) => {
+          const cells = row.querySelectorAll("td");
+          return Array.from(cells).map((cell) => {
+            const text = cell.textContent;
+            return text.includes(",") ? `"${text}"` : text;
+          });
+        });
+
+        const csvContent = [headers, ...data]
+          .map((row) => row.join(","))
+          .join("\n");
+
+        downloadCSV(csvContent);
+      }
+
+      function downloadCSV(csvContent) {
+        const currentDate = new Date().toISOString().slice(0, 10);
+        const fileName = `isrc_fetcher_report_${currentDate}.csv`;
+
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </body>
+</html>

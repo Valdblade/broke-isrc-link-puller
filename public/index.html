@@ -11,13 +11,16 @@
   <nav class="navbar">
     <a href="index.html">Single ISRC Fetch</a>
     <a href="bulk-export.html">Bulk Export</a>
+    <a href="isrcFetcher.html">CSV Import</a>
   </nav>
 
   <div class="container">
-    <h1>Fetch DSP Links by ISRC</h1>
-    <form id="isrc-form">
+    <h1>Fetch DSP Links by ISRC or Spotify URL</h1>
+    <form id="fetch-form">
       <label for="isrc">Enter ISRC:</label>
-      <input type="text" id="isrc" name="isrc" placeholder="e.g., USUM72019793" required>
+      <input type="text" id="isrc" name="isrc" placeholder="e.g., USUM72019793">
+      <label for="spotify-url">or Spotify URL:</label>
+      <input type="text" id="spotify-url" name="spotify-url" placeholder="e.g., https://open.spotify.com/track/...">
       <button type="submit">Fetch Links</button>
     </form>
     <div id="feedback" class="hidden"></div>
@@ -28,6 +31,8 @@
         <img id="track-image" src="" alt="Track Image" />
         <p><strong>Name:</strong> <span id="track-name"></span></p>
         <p><strong>Artist:</strong> <span id="track-artist"></span></p>
+        <p><strong>UPC:</strong> <span id="track-upc"></span></p> <!-- New UPC field -->
+        <p><strong>ISRC:</strong> <span id="track-isrc"></span></p> <!-- New ISRC field -->
         <audio id="audio-player" controls class="hidden">
           <source id="audio-source" src="" type="audio/mpeg">
           Your browser does not support the audio element.
